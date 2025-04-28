@@ -5,28 +5,55 @@ public class Person {
     private String firstName;
     private String lastName;
     private String department;
-    private String major;
+    private Major major;
     private String email;
     private String imageURL;
+    
+    public enum Major {
+        CS("Computer Science"),
+        CPIS("Computer Information Systems"),
+        ENGLISH("English");
+        
+        private final String displayName;
+        
+        Major(String displayName) {
+            this.displayName = displayName;
+        }
+        
+        @Override
+        public String toString() {
+            return displayName;
+        }
+        
+        public static Major fromString(String text) {
+            for (Major major : Major.values()) {
+                if (major.displayName.equalsIgnoreCase(text) || 
+                    major.name().equalsIgnoreCase(text)) {
+                    return major;
+                }
+            }
+            return CS; // Default value
+        }
+    }
 
     public Person() {
     }
 
-    public Person(String firstName, String lastName, String department, String major, String email,  String imageURL) {
+    public Person(String firstName, String lastName, String department, String majorStr, String email, String imageURL) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.department = department;
-        this.major = major;
+        this.major = Major.fromString(majorStr);
         this.email = email;
         this.imageURL = imageURL;
     }
 
-    public Person(Integer id, String firstName, String lastName, String department, String major, String email,  String imageURL) {
+    public Person(Integer id, String firstName, String lastName, String department, String majorStr, String email, String imageURL) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.department = department;
-        this.major = major;
+        this.major = Major.fromString(majorStr);
         this.email = email;
         this.imageURL = imageURL;
     }
@@ -66,12 +93,16 @@ public class Person {
     }
 
 
-    public String getMajor() {
+    public Major getMajor() {
         return major;
     }
 
-    public void setMajor(String major) {
+    public void setMajor(Major major) {
         this.major = major;
+    }
+    
+    public void setMajor(String majorStr) {
+        this.major = Major.fromString(majorStr);
     }
 
 

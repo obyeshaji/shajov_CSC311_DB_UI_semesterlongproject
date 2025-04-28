@@ -6,13 +6,15 @@ import model.Person;
 import service.MyLogger;
 
 import java.sql.*;
+import java.util.Properties;
+
 public class DbConnectivityClass {
-    final static String DB_NAME="CSC311_BD_TEMP";
+    final static String DB_NAME="csc311backendjava";
         MyLogger lg= new MyLogger();
-        final static String SQL_SERVER_URL = "jdbc:mysql://server.mariadb.database.azure.com";//update this server name
-        final static String DB_URL = "jdbc:mysql://server.mariadb.database.azure.com/"+DB_NAME;//update this database name
-        final static String USERNAME = "csc311admin@server";// update this username
-        final static String PASSWORD = "FARM";// update this password
+        final static String SQL_SERVER_URL = "jdbc:mysql://csc311backendjava.mysql.database.azure.com:3306";
+        final static String DB_URL = "jdbc:mysql://csc311backendjava.mysql.database.azure.com:3306/"+DB_NAME;
+        final static String USERNAME = "obye";
+        final static String PASSWORD = "FARM123$"; 
 
 
         private final ObservableList<Person> data = FXCollections.observableArrayList();
@@ -23,7 +25,7 @@ public class DbConnectivityClass {
         public ObservableList<Person> getData() {
             connectToDatabase();
             try {
-                Connection conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+                Connection conn = getConnection();
                 String sql = "SELECT * FROM users ";
                 PreparedStatement preparedStatement = conn.prepareStatement(sql);
                 ResultSet resultSet = preparedStatement.executeQuery();
@@ -48,6 +50,18 @@ public class DbConnectivityClass {
             return data;
         }
 
+        private Connection getConnection() throws SQLException {
+            Properties properties = new Properties();
+            properties.setProperty("user", USERNAME);
+            properties.setProperty("password", PASSWORD);
+            properties.setProperty("useSSL", "true");
+            properties.setProperty("requireSSL", "true");
+            properties.setProperty("verifyServerCertificate", "false");
+            properties.setProperty("serverTimezone", "UTC");
+            
+            return DriverManager.getConnection(DB_URL, properties);
+        }
+
 
         public boolean connectToDatabase() {
             boolean hasRegistredUsers = false;
@@ -56,14 +70,14 @@ public class DbConnectivityClass {
                 Class.forName("com.mysql.cj.jdbc.Driver");
 
                 //First, connect to MYSQL server and create the database if not created
-                Connection conn = DriverManager.getConnection(SQL_SERVER_URL, USERNAME, PASSWORD);
+                Connection conn = getConnection();
                 Statement statement = conn.createStatement();
                 statement.executeUpdate("CREATE DATABASE IF NOT EXISTS "+DB_NAME+"");
                 statement.close();
                 conn.close();
 
-                //Second, connect to the database and create the table "users" if cot created
-                conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+                //Second, connect to the database and create the table "users" if not created
+                conn = getConnection();
                 statement = conn.createStatement();
                 String sql = "CREATE TABLE IF NOT EXISTS users (" + "id INT( 10 ) NOT NULL PRIMARY KEY AUTO_INCREMENT,"
                         + "first_name VARCHAR(200) NOT NULL," + "last_name VARCHAR(200) NOT NULL,"
@@ -97,7 +111,7 @@ public class DbConnectivityClass {
         public void queryUserByLastName(String name) {
             connectToDatabase();
             try {
-                Connection conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+                Connection conn = getConnection();
                 String sql = "SELECT * FROM users WHERE last_name = ?";
                 PreparedStatement preparedStatement = conn.prepareStatement(sql);
                 preparedStatement.setString(1, name);
@@ -124,7 +138,7 @@ public class DbConnectivityClass {
         public void listAllUsers() {
             connectToDatabase();
             try {
-                Connection conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+                Connection conn = getConnection();
                 String sql = "SELECT * FROM users ";
                 PreparedStatement preparedStatement = conn.prepareStatement(sql);
 
@@ -152,13 +166,13 @@ public class DbConnectivityClass {
         public void insertUser(Person person) {
             connectToDatabase();
             try {
-                Connection conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+                Connection conn = getConnection();
                 String sql = "INSERT INTO users (first_name, last_name, department, major, email, imageURL) VALUES (?, ?, ?, ?, ?, ?)";
                 PreparedStatement preparedStatement = conn.prepareStatement(sql);
                 preparedStatement.setString(1, person.getFirstName());
                 preparedStatement.setString(2, person.getLastName());
                 preparedStatement.setString(3, person.getDepartment());
-                preparedStatement.setString(4, person.getMajor());
+                preparedStatement.setString(4, person.getMajor().toString());
                 preparedStatement.setString(5, person.getEmail());
                 preparedStatement.setString(6, person.getImageURL());
                 int row = preparedStatement.executeUpdate();
@@ -175,13 +189,13 @@ public class DbConnectivityClass {
         public void editUser(int id, Person p) {
             connectToDatabase();
             try {
-                Connection conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+                Connection conn = getConnection();
                 String sql = "UPDATE users SET first_name=?, last_name=?, department=?, major=?, email=?, imageURL=? WHERE id=?";
                 PreparedStatement preparedStatement = conn.prepareStatement(sql);
                 preparedStatement.setString(1, p.getFirstName());
                 preparedStatement.setString(2, p.getLastName());
                 preparedStatement.setString(3, p.getDepartment());
-                preparedStatement.setString(4, p.getMajor());
+                preparedStatement.setString(4, p.getMajor().toString());
                 preparedStatement.setString(5, p.getEmail());
                 preparedStatement.setString(6, p.getImageURL());
                 preparedStatement.setInt(7, id);
@@ -197,7 +211,7 @@ public class DbConnectivityClass {
             int id = person.getId();
             connectToDatabase();
             try {
-                Connection conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+                Connection conn = getConnection();
                 String sql = "DELETE FROM users WHERE id=?";
                 PreparedStatement preparedStatement = conn.prepareStatement(sql);
                 preparedStatement.setInt(1, id);
@@ -214,7 +228,7 @@ public class DbConnectivityClass {
             connectToDatabase();
             int id;
             try {
-                Connection conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+                Connection conn = getConnection();
                 String sql = "SELECT id FROM users WHERE email=?";
                 PreparedStatement preparedStatement = conn.prepareStatement(sql);
                 preparedStatement.setString(1, p.getEmail());
